@@ -31,6 +31,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from recbole.evaluator.utils import _binary_clf_curve
 from recbole.evaluator.base_metric import AbstractMetric, TopkMetric, LossMetric
+from recbole.evaluator.metrics_custom import CumulativeTailPercentage
+
 from recbole.utils import EvaluatorType
 
 # TopK Metrics

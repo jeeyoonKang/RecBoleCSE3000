@@ -128,7 +128,8 @@ class NCL(GeneralRecommender):
                 )
             )
         )
-        A._update(data_dict)
+        for (row, col), value in data_dict.items():
+            A[row, col] = value
         # norm adj matrix
         sumArr = (A > 0).sum(axis=1)
         # add epsilon to avoid divide by zero Warning
@@ -141,7 +142,7 @@ class NCL(GeneralRecommender):
         L = sp.coo_matrix(L)
         row = L.row
         col = L.col
-        i = torch.LongTensor(np.array([row, col]))
+        i = torch.LongTensor([row, col])
         data = torch.FloatTensor(L.data)
         SparseL = torch.sparse.FloatTensor(i, data, torch.Size(L.shape))
         return SparseL

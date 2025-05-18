@@ -7,6 +7,12 @@
 # @Author : Zhichao Feng
 # @email  : fzcbupt@gmail.com
 
+# UPDATE
+# @Time   : 2025/5/07
+# @Author : Jeeyoon Irene Kang
+# @Email  : j.kang-2@student.tudelft.nl
+# @Note   : Fixed AttributeError in get_data_struct() when non-tensor (e.g., int) values were present in data_struct
+
 """
 recbole.evaluator.collector
 ################################################
@@ -222,9 +228,14 @@ class Collector(object):
     def get_data_struct(self):
         """Get all the evaluation resource that been collected.
         And reset some of outdated resource.
+        AttributeError: 'int' object has no attribute 'cpu' fixed with try and except
+
         """
         for key in self.data_struct._data_dict:
-            self.data_struct._data_dict[key] = self.data_struct._data_dict[key].cpu()
+            try:
+                self.data_struct._data_dict[key] = self.data_struct._data_dict[key].cpu()
+            except AttributeError:
+                pass
         returned_struct = copy.deepcopy(self.data_struct)
         for key in ["rec.topk", "rec.meanrank", "rec.score", "rec.items", "data.label"]:
             if key in self.data_struct:
