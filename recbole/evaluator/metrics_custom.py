@@ -2,6 +2,8 @@ from recbole.evaluator.base_metric import AbstractMetric
 from recbole.utils import EvaluatorType
 import numpy as np
 import logging
+
+
 class CumulativeTailPercentage(AbstractMetric):
     """
     Metric: CumulativeTailPercentage
@@ -21,7 +23,9 @@ class CumulativeTailPercentage(AbstractMetric):
         """
         super().__init__(config)
         self.topk = config["topk"]
-        self.head_ratio = config["head_ratio"] if "head_ratio" in config else 1 - config["tail_ratio"]
+        self.head_ratio = (
+            config["head_ratio"] if "head_ratio" in config else 1 - config["tail_ratio"]
+        )
         self._cached_tail_items = None
         self.logger = logging.getLogger()
 
@@ -45,7 +49,9 @@ class CumulativeTailPercentage(AbstractMetric):
 
         self.logger.debug(f"Total interactions: {total}")
         self.logger.debug(f"Total unique items: {len(count_items)}")
-        self.logger.debug(f"Head ratio: {self.head_ratio} (top {self.head_ratio:.0%} of interactions)")
+        self.logger.debug(
+            f"Head ratio: {self.head_ratio} (top {self.head_ratio:.0%} of interactions)"
+        )
 
         cumulative = 0
         head_items = set()

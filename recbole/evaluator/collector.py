@@ -233,7 +233,9 @@ class Collector(object):
         """
         for key in self.data_struct._data_dict:
             try:
-                self.data_struct._data_dict[key] = self.data_struct._data_dict[key].cpu()
+                self.data_struct._data_dict[key] = self.data_struct._data_dict[
+                    key
+                ].cpu()
             except AttributeError:
                 pass
         returned_struct = copy.deepcopy(self.data_struct)
