@@ -15,11 +15,15 @@ recbole_metrics.CumulativeTailPercentage = CumulativeTailPercentage
 
 # Manually register in RecBole's global metric registry if not already done
 if "cumulativetailpercentage" not in recbole_register.metrics_dict:
-    recbole_register.metrics_dict['cumulativetailpercentage'] = CumulativeTailPercentage
-    recbole_register.metric_information['cumulativetailpercentage'] = CumulativeTailPercentage.metric_need
-    recbole_register.metric_types['cumulativetailpercentage'] = CumulativeTailPercentage.metric_type
+    recbole_register.metrics_dict["cumulativetailpercentage"] = CumulativeTailPercentage
+    recbole_register.metric_information["cumulativetailpercentage"] = (
+        CumulativeTailPercentage.metric_need
+    )
+    recbole_register.metric_types["cumulativetailpercentage"] = (
+        CumulativeTailPercentage.metric_type
+    )
 
-    if getattr(CumulativeTailPercentage, 'smaller', False):
-        recbole_register.smaller_metrics.append('cumulativetailpercentage')
+    if getattr(CumulativeTailPercentage, "smaller", False):
+        recbole_register.smaller_metrics.append("cumulativetailpercentage")
 
     logging.getLogger().info("[Registered] CumulativeTailPercentage metric.")

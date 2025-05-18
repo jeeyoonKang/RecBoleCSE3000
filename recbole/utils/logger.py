@@ -72,7 +72,7 @@ def init_logger(config):
         >>> logger.info(train_result)
     """
     init(autoreset=True)
-    LOGROOT = config['log_root'] or "./log/"
+    LOGROOT = config["log_root"] or "./log/"
     dir_name = os.path.dirname(LOGROOT)
     ensure_dir(dir_name)
     model_name = os.path.join(dir_name, config["model"])
