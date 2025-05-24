@@ -298,6 +298,7 @@ class Dataset(torch.utils.data.Dataset):
             )
             self.inter_feat = inter_feat
         else:
+            print(f"Using benchmark_filename_list: {self.benchmark_filename_list}")
             sub_inter_lens = []
             sub_inter_feats = []
             overall_field2seqlen = defaultdict(int)
