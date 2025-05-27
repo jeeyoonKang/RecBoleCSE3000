@@ -179,4 +179,5 @@ class WandbLogger(object):
         self._wandb.log({"group_eval_summary": table}, step=step)
 
     def log_valid_score(self, valid_score):
-        self._wandb.log({"valid_score": valid_score})
+        if self.log_wandb:
+            self._wandb.log({"valid_score": valid_score})
