@@ -18,7 +18,7 @@ class CumulativeTailPercentage(AbstractMetric):
     def __init__(self, config):
         super().__init__(config)
         self.topk = config["topk"]
-        self.tail_ratio = config["tail_ratio"] if config["tail_ratio"] else  0.2
+        self.tail_ratio = config["tail_ratio"] if config["tail_ratio"] else 0.2
         self.logger = logging.getLogger()
 
     def used_info(self, dataobject):
@@ -30,7 +30,9 @@ class CumulativeTailPercentage(AbstractMetric):
         """
         Identify tail items based on cumulative popularity mass using `tail_ratio`.
         """
-        sorted_items = sorted(count_items.items(), key=lambda x: (x[1], x[0]))  # ascending
+        sorted_items = sorted(
+            count_items.items(), key=lambda x: (x[1], x[0])
+        )  # ascending
         total = sum(cnt for _, cnt in sorted_items)
         threshold = self.tail_ratio * total
 
@@ -51,13 +53,15 @@ class CumulativeTailPercentage(AbstractMetric):
         return np.isin(item_matrix, list(tail_items)).astype(np.float32)
 
     def metric_info(self, values):
-        return values[:, :max(self.topk)]
+        return values[:, : max(self.topk)]
 
     def topk_result(self, metric, values):
         result = {}
         avg_result = values.mean(axis=0)
         for k in self.topk:
-            result[f"{metric}@{k}"] = round(float(avg_result[k - 1]), self.decimal_place)
+            result[f"{metric}@{k}"] = round(
+                float(avg_result[k - 1]), self.decimal_place
+            )
         return result
 
     def calculate_metric(self, dataobject):
