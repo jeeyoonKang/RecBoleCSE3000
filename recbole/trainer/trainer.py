@@ -496,6 +496,7 @@ class Trainer(AbstractTrainer):
                 self.wandblogger.log_metrics(
                     {**valid_result, "valid_step": valid_step}, head="valid"
                 )
+                self.wandblogger.log_metrics({"valid_score": valid_score}, head="")
 
                 if update_flag:
                     if saved:
