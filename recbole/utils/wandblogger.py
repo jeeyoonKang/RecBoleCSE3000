@@ -80,7 +80,7 @@ class WandbLogger(object):
         return head_metrics
 
     def log_group_eval(
-            self, group_eval, group_name_mappings=None, group_eval_meta=None, step=None
+        self, group_eval, group_name_mappings=None, group_eval_meta=None, step=None
     ):
         """
         Logs group-level evaluation metrics into one wandb.Table and logs summary statistics:
