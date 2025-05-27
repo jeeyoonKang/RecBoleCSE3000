@@ -1388,6 +1388,7 @@ class NCLTrainer(Trainer):
                     self.logger.info(valid_score_output)
                     self.logger.info(valid_result_output)
                 self.tensorboard.add_scalar("Valid_score", valid_score, epoch_idx)
+                self.wandblogger.log_valid_score(valid_score)
 
                 if update_flag:
                     if saved:
