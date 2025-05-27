@@ -20,6 +20,7 @@ class Evaluator(object):
         self.config = config
         self.metrics = [metric.lower() for metric in self.config["metrics"]]
         self.metric_class = {}
+        self.show_progress = self.config["show_progress"]
 
         for metric in self.metrics:
             self.metric_class[metric] = metrics_dict[metric](self.config)
@@ -35,7 +36,26 @@ class Evaluator(object):
 
         """
         result_dict = OrderedDict()
+        print("\n[Evaluator] Starting metric evaluation...")
+
+        # DEBUG: Inspect the recommendation matrix
+        if dataobject.get("rec.items") is not None and self.show_progress is True:
+            item_matrix = dataobject.get("rec.items")
+            print(f"[DEBUG] Recommendation matrix shape: {item_matrix.shape}")  # (num_users, topk)
+            print(f"[DEBUG] Number of users: {item_matrix.shape[0]}")
+            print(f"[DEBUG] Top-K: {item_matrix.shape[1]}")
+        else:
+            print("[DEBUG] rec.items not found in dataobject")
+
+        # DEBUG: Total number of items
+        if dataobject.get("data.num_items") is not None and self.show_progress is True:
+            print(f"[DEBUG] Total number of items: {dataobject.get('data.num_items')}")
+        else:
+            print("[DEBUG] data.num_items not found")
+
         for metric in self.metrics:
             metric_val = self.metric_class[metric].calculate_metric(dataobject)
             result_dict.update(metric_val)
+
         return result_dict
+

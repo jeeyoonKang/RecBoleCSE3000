@@ -20,6 +20,7 @@ class CumulativeTailPercentage(AbstractMetric):
         self.topk = config["topk"]
         self.tail_ratio = config["tail_ratio"] if config["tail_ratio"] else 0.2
         self.logger = logging.getLogger()
+        self.show_progress = config['show_progress']
 
     def used_info(self, dataobject):
         item_matrix = dataobject.get("rec.items")
@@ -69,4 +70,8 @@ class CumulativeTailPercentage(AbstractMetric):
         tail_items = self.get_tail_items(count_items)
         tail_mask = self.get_tail_matrix(item_matrix, tail_items)
         metric_values = self.metric_info(tail_mask)
+        if self.show_progress:
+            print("Number of tail items:", len(tail_items))
+            print("Example tail item IDs:", list(tail_items)[:10])
+            print(f"CumulativeTailPercentage: {metric_values}")
         return self.topk_result("cumulativetailpercentage", metric_values)
