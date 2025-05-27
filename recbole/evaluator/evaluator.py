@@ -41,7 +41,9 @@ class Evaluator(object):
         # DEBUG: Inspect the recommendation matrix
         if dataobject.get("rec.items") is not None and self.show_progress is True:
             item_matrix = dataobject.get("rec.items")
-            print(f"[DEBUG] Recommendation matrix shape: {item_matrix.shape}")  # (num_users, topk)
+            print(
+                f"[DEBUG] Recommendation matrix shape: {item_matrix.shape}"
+            )  # (num_users, topk)
             print(f"[DEBUG] Number of users: {item_matrix.shape[0]}")
             print(f"[DEBUG] Top-K: {item_matrix.shape[1]}")
         else:
@@ -58,4 +60,3 @@ class Evaluator(object):
             result_dict.update(metric_val)
 
         return result_dict
-

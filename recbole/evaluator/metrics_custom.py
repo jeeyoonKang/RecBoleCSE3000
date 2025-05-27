@@ -20,7 +20,7 @@ class CumulativeTailPercentage(AbstractMetric):
         self.topk = config["topk"]
         self.tail_ratio = config["tail_ratio"] if config["tail_ratio"] else 0.2
         self.logger = logging.getLogger()
-        self.show_progress = config['show_progress']
+        self.show_progress = config["show_progress"]
 
     def used_info(self, dataobject):
         item_matrix = dataobject.get("rec.items")
