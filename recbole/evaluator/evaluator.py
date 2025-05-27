@@ -36,24 +36,24 @@ class Evaluator(object):
 
         """
         result_dict = OrderedDict()
-        print("\n[Evaluator] Starting metric evaluation...")
+        # print("\n[Evaluator] Starting metric evaluation...")
+        #
+        # # DEBUG: Inspect the recommendation matrix
+        # if dataobject.get("rec.items") is not None and self.show_progress is True:
+        #     item_matrix = dataobject.get("rec.items")
+        #     print(
+        #         f"[DEBUG] Recommendation matrix shape: {item_matrix.shape}"
+        #     )  # (num_users, topk)
+        #     print(f"[DEBUG] Number of users: {item_matrix.shape[0]}")
+        #     print(f"[DEBUG] Top-K: {item_matrix.shape[1]}")
+        # else:
+        #     print("[DEBUG] rec.items not found in dataobject")
 
-        # DEBUG: Inspect the recommendation matrix
-        if dataobject.get("rec.items") is not None and self.show_progress is True:
-            item_matrix = dataobject.get("rec.items")
-            print(
-                f"[DEBUG] Recommendation matrix shape: {item_matrix.shape}"
-            )  # (num_users, topk)
-            print(f"[DEBUG] Number of users: {item_matrix.shape[0]}")
-            print(f"[DEBUG] Top-K: {item_matrix.shape[1]}")
-        else:
-            print("[DEBUG] rec.items not found in dataobject")
-
-        # DEBUG: Total number of items
-        if dataobject.get("data.num_items") is not None and self.show_progress is True:
-            print(f"[DEBUG] Total number of items: {dataobject.get('data.num_items')}")
-        else:
-            print("[DEBUG] data.num_items not found")
+        # # DEBUG: Total number of items
+        # if dataobject.get("data.num_items") is not None and self.show_progress is True:
+        #     print(f"[DEBUG] Total number of items: {dataobject.get('data.num_items')}")
+        # else:
+        #     print("[DEBUG] data.num_items not found")
 
         for metric in self.metrics:
             metric_val = self.metric_class[metric].calculate_metric(dataobject)
