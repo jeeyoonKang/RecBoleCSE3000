@@ -776,6 +776,7 @@ class TailPercentage(AbstractMetric):
             metric_dict[key] = round(avg_result[k - 1], self.decimal_place)
         return metric_dict
 
+
 class DifferentialFairness(AbstractMetric):
     """
     The DifferentialFairness metric aims to ensure equitable treatment for all protected groups.
@@ -794,35 +795,39 @@ class DifferentialFairness(AbstractMetric):
     :math:`N_A` is the number of users of gender A (m or f ).
 
     """
+
     smaller = True
     metric_type = EvaluatorType.RANKING
-    metric_need = ['data.positive_i', 'rec.positive_score', 'data.sst']
+    metric_need = ["data.positive_i", "rec.positive_score", "data.sst"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.sst_key_list = config['sst_attr_list']
+        self.sst_key_list = config["sst_attr_list"]
 
     def used_info(self, dataobject):
-        score = dataobject.get('rec.positive_score').numpy()
-        iids = dataobject.get('data.positive_i').numpy()
+        score = dataobject.get("rec.positive_score").numpy()
+        iids = dataobject.get("data.positive_i").numpy()
         sst_value_dict = {}
         for sst_key in self.sst_key_list:
-            sst_value_dict[sst_key] = dataobject.get('data.' + sst_key).numpy()
+            sst_value_dict[sst_key] = dataobject.get("data." + sst_key).numpy()
 
         return score, iids, sst_value_dict
 
     def register(self, register):
-        register.register('data.positive_i')
-        register.register('rec.positive_score')
+        register.register("data.positive_i")
+        register.register("rec.positive_score")
         for sst_key in self.sst_key_list:  # e.g., ['gender', 'age_group']
-            register.register(f'data.{sst_key}')
+            register.register(f"data.{sst_key}")
 
     def calculate_metric(self, dataobject):
         score, iids, sst_value_dict = self.used_info(dataobject)
         metric_dict = {}
         for sst_key, sst_value in sst_value_dict.items():
-            key = 'DifferentialFairness@{}'.format(sst_key)
-            metric_dict[key] = round(self.get_differential_fairness(score, iids, sst_value), self.decimal_place)
+            key = "DifferentialFairness@{}".format(sst_key)
+            metric_dict[key] = round(
+                self.get_differential_fairness(score, iids, sst_value),
+                self.decimal_place,
+            )
 
         return metric_dict
 
@@ -838,7 +843,9 @@ class DifferentialFairness(AbstractMetric):
         """
         sst_unique_values, sst_indices = np.unique(sst_value, return_inverse=True)
         iid_unique_values, iid_indices = np.unique(iids, return_inverse=True)
-        score_matric = np.zeros((len(iid_unique_values), len(sst_unique_values)), dtype=np.float32)
+        score_matric = np.zeros(
+            (len(iid_unique_values), len(sst_unique_values)), dtype=np.float32
+        )
         epsilon_values = np.zeros(len(iid_unique_values), dtype=np.float32)
 
         concentration_parameter = 1.0
@@ -848,12 +855,17 @@ class DifferentialFairness(AbstractMetric):
             for j in range(len(sst_unique_values)):
                 indices = (iid_indices == i) * (sst_indices == j)
                 score_matric[i, j] = (score[indices].sum() + dirichlet_alpha) / (
-                            indices.sum() + concentration_parameter)
+                    indices.sum() + concentration_parameter
+                )
 
         for i in range(len(sst_unique_values)):
             for j in range(i + 1, len(sst_unique_values)):
-                epsilon = np.abs(np.log(score_matric[:, i]) - np.log(score_matric[:, j]))
-                epsilon_values = np.where(epsilon > epsilon_values, epsilon, epsilon_values)
+                epsilon = np.abs(
+                    np.log(score_matric[:, i]) - np.log(score_matric[:, j])
+                )
+                epsilon_values = np.where(
+                    epsilon > epsilon_values, epsilon, epsilon_values
+                )
 
         return epsilon_values.mean()
 
@@ -861,42 +873,46 @@ class DifferentialFairness(AbstractMetric):
 class NonParityUnfairness(AbstractMetric):
     r"""NonParityUnFairness measures unfairness of non-parity
 
-        For further details, please refer to the `paper <https://proceedings.neurips.cc/paper/2017/file/e6384711491713d29bc63fc5eeb5ba4f-Paper.pdf>`__.
+    For further details, please refer to the `paper <https://proceedings.neurips.cc/paper/2017/file/e6384711491713d29bc63fc5eeb5ba4f-Paper.pdf>`__.
 
-        .. math::
-            \mathrm {\left|\mathrm{E}_{g}[y]-\mathrm{E}_{\neg g}[y]\right|}
+    .. math::
+        \mathrm {\left|\mathrm{E}_{g}[y]-\mathrm{E}_{\neg g}[y]\right|}
 
-        :math:`g` is protected group.
-        :math:`\neg g` is unprotected group.
+    :math:`g` is protected group.
+    :math:`\neg g` is unprotected group.
 
-        """
+    """
+
     smaller = True
     metric_type = EvaluatorType.RANKING
-    metric_need = ['rec.positive_score', 'data.sst']
+    metric_need = ["rec.positive_score", "data.sst"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.sst_attr_list = config['sst_attr_list']
+        self.sst_attr_list = config["sst_attr_list"]
 
     def used_info(self, dataobject):
-        score = dataobject.get('rec.positive_score').numpy()
+        score = dataobject.get("rec.positive_score").numpy()
         sst_dict = {}
         for sst in self.sst_attr_list:
-            sst_dict[sst] = dataobject.get('data.' + sst).numpy()
+            sst_dict[sst] = dataobject.get("data." + sst).numpy()
 
         return score, sst_dict
 
     def register(self, register):
-        register.register('data.positive_i')
-        register.register('rec.positive_score')
+        register.register("data.positive_i")
+        register.register("rec.positive_score")
         for sst_key in self.sst_key_list:  # e.g., ['gender', 'age_group']
-            register.register(f'data.{sst_key}')
+            register.register(f"data.{sst_key}")
+
     def calculate_metric(self, dataobject):
         score, sst_dict = self.used_info(dataobject)
         metric_dict = {}
         for sst, value in sst_dict.items():
-            key = 'NonParityUnfairness@{}'.format(sst)
-            metric_dict[key] = round(self.get_nonparity(score, sst, value), self.decimal_place)
+            key = "NonParityUnfairness@{}".format(sst)
+            metric_dict[key] = round(
+                self.get_nonparity(score, sst, value), self.decimal_place
+            )
 
         return metric_dict
 
@@ -912,7 +928,7 @@ class NonParityUnfairness(AbstractMetric):
         """
         unique_value = np.unique(sst_value)
         if len(unique_value) < 2:
-            raise ValueError(f'there is only one value for {sst} sensitive attribute')
+            raise ValueError(f"there is only one value for {sst} sensitive attribute")
 
         sst_avg_score = []
         for s in unique_value:

@@ -25,7 +25,9 @@ class CumulativeTailPercentage(AbstractMetric):
     def __init__(self, config):
         super().__init__(config)
         self.topk = config["topk"]  # List of cutoff points (e.g., [5, 10, 20])
-        self.tail_ratio = config["tail_ratio"] if config["tail_ratio"] else 0.2  # Ratio of cumulative interaction mass defining the tail
+        self.tail_ratio = (
+            config["tail_ratio"] if config["tail_ratio"] else 0.2
+        )  # Ratio of cumulative interaction mass defining the tail
         self.logger = logging.getLogger()
         self.show_progress = config["show_progress"]
 
@@ -67,13 +69,11 @@ class CumulativeTailPercentage(AbstractMetric):
             if cumulative >= threshold:
                 break
 
-
         # Debug logging
         self.logger.debug(f"Total interactions: {total}")
         self.logger.debug(f"Tail ratio threshold: {threshold}")
         self.logger.debug(f"Tail item count: {len(tail_items)}")
         return tail_items
-
 
     def get_tail_matrix(self, item_matrix, tail_items):
         """
@@ -87,8 +87,6 @@ class CumulativeTailPercentage(AbstractMetric):
             ndarray: binary matrix [num_users, top_k], where 1 indicates a tail item.
         """
         return np.isin(item_matrix, list(tail_items)).astype(np.float32)
-
-
 
     def metric_info(self, values):
         """
@@ -116,7 +114,9 @@ class CumulativeTailPercentage(AbstractMetric):
         result = {}
         avg_result = values.mean(axis=0)  # Average across all users
         for k in self.topk:
-            result[f"{metric}@{k}"] = round(float(avg_result[k - 1]), self.decimal_place)
+            result[f"{metric}@{k}"] = round(
+                float(avg_result[k - 1]), self.decimal_place
+            )
         return result
 
     def calculate_metric(self, dataobject):
@@ -140,9 +140,6 @@ class CumulativeTailPercentage(AbstractMetric):
         return result
 
 
-
-
-
 class CumulativeHeadPercentage(AbstractMetric):
     metric_type = EvaluatorType.RANKING
     metric_need = ["rec.items", "data.count_items"]
@@ -150,8 +147,9 @@ class CumulativeHeadPercentage(AbstractMetric):
     def __init__(self, config):
         super().__init__(config)
         self.topk = config["topk"]
-        self.tail_ratio = config["tail_ratio"] if config[
-            "tail_ratio"] else 0.2  # Ratio of cumulative interaction mass defining the tail
+        self.tail_ratio = (
+            config["tail_ratio"] if config["tail_ratio"] else 0.2
+        )  # Ratio of cumulative interaction mass defining the tail
         self.logger = logging.getLogger()
 
     def used_info(self, dataobject):
@@ -183,7 +181,9 @@ class CumulativeHeadPercentage(AbstractMetric):
         result = {}
         avg_result = values.mean(axis=0)
         for k in self.topk:
-            result[f"{metric}@{k}"] = round(float(avg_result[k - 1]), self.decimal_place)
+            result[f"{metric}@{k}"] = round(
+                float(avg_result[k - 1]), self.decimal_place
+            )
         return result
 
     def calculate_metric(self, dataobject):
@@ -192,5 +192,3 @@ class CumulativeHeadPercentage(AbstractMetric):
         head_mask = self.get_group_mask(item_matrix, head_items)
         head_values = self.metric_info(head_mask)
         return self.topk_result("headpercentage", head_values)
-
-

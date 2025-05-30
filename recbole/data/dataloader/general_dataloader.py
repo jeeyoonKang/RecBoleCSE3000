@@ -288,22 +288,29 @@ class FullSortEvalDataLoader(AbstractDataLoader):
 
             # --- inject group fields (e.g. gender, age_group) into user_df ---
             # This assumes these fields were loaded and available in self.user_df
-            group_fields = config['sst_attr_list']  # ['gender', 'age_group', ...]
+            group_fields = config["sst_attr_list"]  # ['gender', 'age_group', ...]
             item_num = self._dataset.item_num
 
             for field in group_fields:
                 if field in user_df:
-                    raw_values = torch.tensor(user_df[field].values)  # shape: [num_users]
-                    expanded = raw_values.unsqueeze(1).expand(-1, item_num).reshape(-1)  # [num_users * num_items]
+                    raw_values = torch.tensor(
+                        user_df[field].values
+                    )  # shape: [num_users]
+                    expanded = (
+                        raw_values.unsqueeze(1).expand(-1, item_num).reshape(-1)
+                    )  # [num_users * num_items]
                     user_df[field] = expanded
-
 
             # --- inject item-side group fields into `transformed_interaction` ---
             item_df = self._dataset.item_feat  # Raw item features
             for field in group_fields:
                 if field in item_df:
-                    raw_values = torch.tensor(item_df[field].values)  # shape: [num_items]
-                    expanded = raw_values.unsqueeze(0).expand(len(user_df), -1).reshape(-1)  # [num_users * num_items]
+                    raw_values = torch.tensor(
+                        item_df[field].values
+                    )  # shape: [num_items]
+                    expanded = (
+                        raw_values.unsqueeze(0).expand(len(user_df), -1).reshape(-1)
+                    )  # [num_users * num_items]
                     transformed_interaction.add_field(field, expanded)
 
             return transformed_interaction, None, positive_u, positive_i

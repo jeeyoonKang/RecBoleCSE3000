@@ -7,7 +7,7 @@ from recbole.evaluator.metrics_custom import CumulativeTailPercentage
 
 from recbole.evaluator.metrics_custom import (
     CumulativeTailPercentage,
-    CumulativeHeadPercentage
+    CumulativeHeadPercentage,
 )
 
 from recbole.evaluator import register as recbole_register
@@ -17,7 +17,7 @@ import logging
 # Shorthand reference
 metrics_to_register = {
     "cumulativetailpercentage": CumulativeTailPercentage,
-    "cumulativeheadpercentage": CumulativeHeadPercentage
+    "cumulativeheadpercentage": CumulativeHeadPercentage,
 }
 
 for name, metric_cls in metrics_to_register.items():
