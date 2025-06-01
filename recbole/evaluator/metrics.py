@@ -450,7 +450,7 @@ class LogLoss(LossMetric):
 
     def metric_info(self, preds, trues):
         eps = 1e-15
-        preds = float64(preds)
+        preds = np.float64(preds)
         preds = np.clip(preds, eps, 1 - eps)
         loss = np.sum(-trues * np.log(preds) - (1 - trues) * np.log(1 - preds))
         return loss / len(preds)
