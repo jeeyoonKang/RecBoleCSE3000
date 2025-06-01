@@ -939,6 +939,7 @@ class NonParityUnfairness(AbstractMetric):
         else:
             return np.std(sst_avg_score)
 
+
 class CumulativeAuthorHeadPercentage(AbstractMetric):
     metric_type = EvaluatorType.RANKING
     metric_need = ["rec.items", "data.count_items", "data.item2author"]
@@ -953,9 +954,6 @@ class CumulativeAuthorHeadPercentage(AbstractMetric):
         count_items = dict(dataobject.get("data.count_items"))
         item2author = dict(dataobject.get("data.item2author"))  # Custom field
         return item_matrix, count_items, item2author
-
-
-
 
     def get_head_authors(self, count_items, item2author):
         # Aggregate author popularity
@@ -998,7 +996,9 @@ class CumulativeAuthorHeadPercentage(AbstractMetric):
         result = {}
         avg_result = values.mean(axis=0)
         for k in self.topk:
-            result[f"{metric}@{k}"] = round(float(avg_result[k - 1]), self.decimal_place)
+            result[f"{metric}@{k}"] = round(
+                float(avg_result[k - 1]), self.decimal_place
+            )
         return result
 
     def calculate_metric(self, dataobject):

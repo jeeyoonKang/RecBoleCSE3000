@@ -113,7 +113,7 @@ class WandbLogger(object):
             )
 
             for group_id, metrics in group_metrics.items():
-                group_name = (name_map.get(group_id, str(group_id)))
+                group_name = name_map.get(group_id, str(group_id))
                 if group_name:
                     group_name = str(group_name)
                 group_size = size_map.get(str(group_id), -1)
