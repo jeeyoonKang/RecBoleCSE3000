@@ -113,7 +113,9 @@ class WandbLogger(object):
             )
 
             for group_id, metrics in group_metrics.items():
-                group_name = name_map.get(group_id, str(group_id))
+                group_name = (name_map.get(group_id, str(group_id)))
+                if group_name:
+                    group_name = str(group_name)
                 group_size = size_map.get(str(group_id), -1)
                 row = {
                     "GroupType": group_type,
@@ -133,7 +135,7 @@ class WandbLogger(object):
         all_metrics = sorted(all_metrics)
         columns = ["GroupType", "Group", "GroupSize"] + all_metrics
         data = [
-            [row["GroupType"], row["Group"], row["GroupSize"]]
+            [str(row["GroupType"]), str(row["Group"]), row["GroupSize"]]
             + [row.get(m) for m in all_metrics]
             for row in all_rows
         ]

@@ -89,7 +89,7 @@ class MRR(TopkMetric):
 
     def metric_info(self, pos_index):
         idxs = pos_index.argmax(axis=1)
-        result = np.zeros_like(pos_index, dtype=np.float)
+        result = np.zeros_like(pos_index, dtype=float)
         for row, idx in enumerate(idxs):
             if pos_index[row, idx] > 0:
                 result[row, idx:] = 1 / (idx + 1)
@@ -127,10 +127,10 @@ class MAP(TopkMetric):
 
     def metric_info(self, pos_index, pos_len):
         pre = pos_index.cumsum(axis=1) / np.arange(1, pos_index.shape[1] + 1)
-        sum_pre = np.cumsum(pre * pos_index.astype(np.float), axis=1)
+        sum_pre = np.cumsum(pre * pos_index.astype(float), axis=1)
         len_rank = np.full_like(pos_len, pos_index.shape[1])
         actual_len = np.where(pos_len > len_rank, len_rank, pos_len)
-        result = np.zeros_like(pos_index, dtype=np.float)
+        result = np.zeros_like(pos_index, dtype=float)
         for row, lens in enumerate(actual_len):
             ranges = np.arange(1, pos_index.shape[1] + 1)
             ranges[lens:] = ranges[lens - 1]
@@ -189,13 +189,13 @@ class NDCG(TopkMetric):
         len_rank = np.full_like(pos_len, pos_index.shape[1])
         idcg_len = np.where(pos_len > len_rank, len_rank, pos_len)
 
-        iranks = np.zeros_like(pos_index, dtype=np.float)
+        iranks = np.zeros_like(pos_index, dtype=float)
         iranks[:, :] = np.arange(1, pos_index.shape[1] + 1)
         idcg = np.cumsum(1.0 / np.log2(iranks + 1), axis=1)
         for row, idx in enumerate(idcg_len):
             idcg[row, idx:] = idcg[row, idx - 1]
 
-        ranks = np.zeros_like(pos_index, dtype=np.float)
+        ranks = np.zeros_like(pos_index, dtype=float)
         ranks[:, :] = np.arange(1, pos_index.shape[1] + 1)
         dcg = 1.0 / np.log2(ranks + 1)
         dcg = np.cumsum(np.where(pos_index, dcg, 0), axis=1)
@@ -450,7 +450,7 @@ class LogLoss(LossMetric):
 
     def metric_info(self, preds, trues):
         eps = 1e-15
-        preds = np.float64(preds)
+        preds = float64(preds)
         preds = np.clip(preds, eps, 1 - eps)
         loss = np.sum(-trues * np.log(preds) - (1 - trues) * np.log(1 - preds))
         return loss / len(preds)
@@ -844,9 +844,9 @@ class DifferentialFairness(AbstractMetric):
         sst_unique_values, sst_indices = np.unique(sst_value, return_inverse=True)
         iid_unique_values, iid_indices = np.unique(iids, return_inverse=True)
         score_matric = np.zeros(
-            (len(iid_unique_values), len(sst_unique_values)), dtype=np.float32
+            (len(iid_unique_values), len(sst_unique_values)), dtype=float
         )
-        epsilon_values = np.zeros(len(iid_unique_values), dtype=np.float32)
+        epsilon_values = np.zeros(len(iid_unique_values), dtype=float)
 
         concentration_parameter = 1.0
         dirichlet_alpha = concentration_parameter / len(iid_unique_values)
@@ -938,3 +938,72 @@ class NonParityUnfairness(AbstractMetric):
             return np.abs(sst_avg_score[0] - sst_avg_score[1])
         else:
             return np.std(sst_avg_score)
+
+class CumulativeAuthorHeadPercentage(AbstractMetric):
+    metric_type = EvaluatorType.RANKING
+    metric_need = ["rec.items", "data.count_items", "data.item2author"]
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.topk = config["topk"]
+        self.tail_ratio = config["tail_ratio"]
+
+    def used_info(self, dataobject):
+        item_matrix = dataobject.get("rec.items").numpy()
+        count_items = dict(dataobject.get("data.count_items"))
+        item2author = dict(dataobject.get("data.item2author"))  # Custom field
+        return item_matrix, count_items, item2author
+
+
+
+
+    def get_head_authors(self, count_items, item2author):
+        # Aggregate author popularity
+        author_popularity = {}
+        for item, count in count_items.items():
+            author = item2author.get(item)
+            if author is not None:
+                author_popularity[author] = author_popularity.get(author, 0) + count
+
+        # Sort authors by popularity
+        sorted_authors = sorted(author_popularity.items(), key=lambda x: (x[1], x[0]))
+        total = sum(cnt for _, cnt in sorted_authors)
+        threshold = self.tail_ratio * total
+
+        # Get head authors by cumulative interaction mass
+        head_authors, cumulative = set(), 0
+        for author, cnt in reversed(sorted_authors):
+            cumulative += cnt
+            head_authors.add(author)
+            if cumulative >= threshold:
+                break
+        return head_authors
+
+    def get_group_mask(self, item_matrix, item2author, head_authors):
+        # Convert item_matrix into author_matrix and mark if the author is in head group
+        num_users, topk = item_matrix.shape
+        mask = np.zeros((num_users, topk), dtype=float)
+        for u in range(num_users):
+            for k in range(topk):
+                item = item_matrix[u, k]
+                author = item2author.get(item)
+                if author in head_authors:
+                    mask[u, k] = 1.0
+        return mask
+
+    def metric_info(self, values):
+        return values.cumsum(axis=1) / np.arange(1, values.shape[1] + 1)
+
+    def topk_result(self, metric, values):
+        result = {}
+        avg_result = values.mean(axis=0)
+        for k in self.topk:
+            result[f"{metric}@{k}"] = round(float(avg_result[k - 1]), self.decimal_place)
+        return result
+
+    def calculate_metric(self, dataobject):
+        item_matrix, count_items, item2author = self.used_info(dataobject)
+        head_authors = self.get_head_authors(count_items, item2author)
+        mask = self.get_group_mask(item_matrix, item2author, head_authors)
+        info = self.metric_info(mask)
+        return self.topk_result("authorheadpercentage", info)
